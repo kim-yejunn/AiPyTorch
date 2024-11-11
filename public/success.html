@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- CSS 로드 -->
+    <link href="successStyle.css" rel="stylesheet" type="text/css" />
+
+    <title>WHP</title>
+
+    <!-- 스타일링 -->
+    <style>
+        #similarImageContainer {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px; /* 이미지 위에 여백을 추가 */
+        }
+        #similarImageContainer img {
+            max-width: 50%; /* 최대 너비를 50%로 설정*/
+            height: auto; /* 높이를 자동으로 조정하여 비율을 유지합니다 */
+            display: block; /* 이미지를 보이게 합니다 */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 이미지를 표시할 img 태그 추가 -->
+    <img id="uploadedImage" src="" alt="Uploaded Image" style="display:none;">
+    <img id="image" src="" alt="Image" style="display:none;">
+
+    <!-- 이미지 호스팅 사이트에서 메인로고 불러오기 -->
+    <div class="mainLogo">
+        <a href="index.html">
+            <img src="https://i.ibb.co/6N5mxSF/3-Main-Logo-Original-Bold.png" alt="3-Main-Logo-Original-Bold" />
+        </a>
+    </div>
+
+    <!-- 메인 문구 -->
+    <strong class="successPhrase"> 유사한 장소를 찾았습니다 ! </strong>
+
+    <div id="similarImageContainer">
+        <!-- 입력 이미지를 표시할 곳 -->
+    </div>
+    <p > 찾고자 하는 장소! </p>
+
+    <!-- 결과 이미지를 표시할 곳 -->
+    <div class="image-container">
+        <img id="firebaseImage" src="" alt="Firebase에서 로드된 이미지">
+    </div>
+
+    <!-- 스크립트 -->
+    <script>
+        // URL에서 이미지 URL 파라미터 추출
+        const urlParams = new URLSearchParams(window.location.search);
+        const imageUrlParam = urlParams.get('imageUrl');
+
+        const imageUrlParam2 = urlParams.get('similarImage');
+
+        console.log(imageUrlParam);
+        console.log(imageUrlParam2);
+
+        // 파일 이름에서 확장자(.jpg) 제거
+        const imageName = imageUrlParam2.substring(imageUrlParam2.lastIndexOf('/') + 1).replace('.jpg', '');
+
+        // 값을 화면에 출력
+        document.write(`<p>근처에 유사한 장소: ${imageName}</p>`);
+    
+        // 이미지를 가져와서 화면에 표시
+        if (imageUrlParam) {
+            const img = document.createElement('img');
+            img.src = imageUrlParam;
+            img.alt = 'Similar Image';
+            img.onload = () => {
+                document.getElementById('similarImageContainer').appendChild(img);
+            };
+        } else {
+            const errorText = document.createElement('p');
+            errorText.textContent = 'Error: No image URL provided.';
+            document.getElementById('similarImageContainer').appendChild(errorText);
+        }
+    </script>
+
+    <!-- Firebase 스크립트 로드 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWoNvLsqbVzfDMpoubR1e7t6Ny4Xxk0JY",
+            authDomain: "webhotplace-1cce1.firebaseapp.com",
+            projectId: "webhotplace-1cce1",
+            storageBucket: "webhotplace-1cce1.appspot.com",
+            messagingSenderId: "331407528116",
+            appId: "1:331407528116:web:b4f6a50ec1587b9c4707e1",
+            measurementId: "G-N5Y9J96L8M"
+        };
+
+        // Firebase 앱 초기화
+        const app = initializeApp(firebaseConfig);
+        // Firebase Storage 인스턴스 생성
+        const storage = getStorage(app);
+
+        // gs:// URL을 사용하여 Storage 참조 생성
+        const storageRef = ref(storage, 'gs://webhotplace-1cce1.appspot.com/images_database/' + imageUrlParam2);
+
+        // 다운로드 URL 가져오기
+        getDownloadURL(storageRef)
+        .then((url) => {
+            // 여기서 url은 이미지의 다운로드 가능한 URL입니다.
+            console.log(url);
+            // 이미지 태그를 찾고, src 속성을 설정하여 이미지를 표시합니다.
+            document.getElementById('firebaseImage').src = url;
+            document.getElementById('firebaseImage').style.display = 'block'; // 이미지를 보이게 합니다.
+        })
+        .catch((error) => {
+            // 오류 처리
+            console.error("다운로드 URL을 가져오는 데 실패했습니다:", error);
+        });
+        </script>
+    
+    <script>
+        // URL에서 쿼리 파라미터를 파싱하는 함수
+        function getQueryParam(param) {
+            var queryString = window.location.search.substring(1);
+            var queryParams = queryString.split('&');
+            for (var i = 0; i < queryParams.length; i++) {
+                var pair = queryParams[i].split('=');
+                if (decodeURIComponent(pair[0]) == param) {
+                    return decodeURIComponent(pair[1]);
+                }
+            }
+            return null;
+        }
+    
+        // 이미지 URL을 쿼리 파라미터에서 추출하고 img 태그의 src 속성에 설정
+        var imageUrl = getQueryParam('image');
+        if (imageUrl) {
+            var uploadedImage = document.getElementById('uploadedImage');
+            var image = document.getElementById('image');
+            
+            uploadedImage.src = imageUrl;
+            image.src = imageUrl;
+            
+            uploadedImage.style.display = 'block';
+            image.style.display = 'block';
+        }
+    </script>
+
+    <!-- 저작권 -->
+    <footer>
+        <b>Copyright  ©  2024  WebHotPlace  Inc,  All  rights  reserved.</b>
+    </footer>
+
+</body>
+</html>
